@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TIEA – Test de Inteligencia Emocional | UPC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--card:#f6f6f8;--line:#d9d9e0;--acc:#e30613;--accfg:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141417;--fg:#f1f1f3;--mut:#a0a0aa;--card:#1e1e23;--line:#33333b}}
+:root[data-theme="dark"]{--bg:#141417;--fg:#f1f1f3;--mut:#a0a0aa;--card:#1e1e23;--line:#33333b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:820px;margin:0 auto;padding:20px 16px 60px}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.logo{background:var(--acc);color:var(--accfg);font-weight:800;padding:6px 12px;border-radius:8px;letter-spacing:1px}
+h1{font-size:1.25rem;margin:8px 0 2px}.sub{color:var(--mut);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label.f{display:flex;flex-direction:column;font-size:.85rem;color:var(--mut);gap:4px}
+input,select{font:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.q{padding:12px 0;border-top:1px solid var(--line)}.q:first-child{border-top:0}
+.q p{margin:0 0 8px}.q b{color:var(--acc)}
+.sc{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.sc label{text-align:center;border:1px solid var(--line);border-radius:8px;padding:7px 2px;cursor:pointer;font-size:.8rem;background:var(--bg)}
+.sc label span{display:block;font-weight:700;font-size:1rem}
+.sc input{position:absolute;opacity:0;pointer-events:none}
+.sc label:has(input:checked){background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.leg{font-size:.85rem;color:var(--mut)}
+button{font:inherit;font-weight:600;padding:12px 20px;border:0;border-radius:10px;background:var(--acc);color:var(--accfg);cursor:pointer}
+button.s{background:var(--card);color:var(--fg);border:1px solid var(--line)}
+.err{color:var(--acc);margin:8px 0;min-height:1.2em}
+.ok{text-align:center;padding:40px 16px}
+.tw{overflow-x:auto}table{border-collapse:collapse;font-size:.8rem;white-space:nowrap}td,th{border:1px solid var(--line);padding:4px 7px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;font-size:.85rem;color:var(--mut);z-index:2}
+</style></head><body><div class="w" id="app"></div>
+<script>
+const Q=["Reconozco con facilidad lo que siento en distintas situaciones.","Puedo identificar cuando un compañero está triste o enojado por su expresión facial.","Me doy cuenta cuando mi estado de ánimo cambia durante el día.","Puedo expresar lo que siento sin dificultad.","Distingo entre diferentes emociones que siento al mismo tiempo (por ejemplo, alegría y temor).","Entiendo por qué las personas reaccionan de cierta manera ante determinadas situaciones.","Comprendo cómo mis emociones afectan mis pensamientos y decisiones.","Puedo anticipar cómo se sentirá un amigo ante una noticia buena o mala.","Analizo las causas de mis propias emociones antes de actuar.","Reconozco cuando una emoción es consecuencia de otra (por ejemplo, la frustración que lleva a la tristeza).","Puedo calmarme cuando estoy muy enojado(a).","Controlo mis impulsos incluso cuando estoy muy alterado(a).","Busco formas saludables de manejar el estrés (por ejemplo, hacer ejercicio o hablar con alguien).","Evito actuar de manera agresiva cuando algo me molesta.","Soy capaz de tranquilizar a un compañero que está pasando por un mal momento.","Uso lo que siento (por ejemplo, la ilusión o el entusiasmo) para motivarme a alcanzar mis metas.","Cuando tomo decisiones importantes, considero cómo me siento al respecto.","Uso mi buen estado de ánimo para resolver problemas de forma creativa.","Mis emociones me ayudan a relacionarme mejor con los demás.","Aprovecho las emociones positivas para mejorar mi rendimiento académico."];
+const L=["Nunca","Casi nunca","A veces","Casi siempre","Siempre"];
+const app=document.getElementById("app");let db=null,user=null,admin=false;
+const hoy=()=>{const d=new Date();return d.toISOString().slice(0,10)};
+function head(t){return `<div class="brand"><div class="logo">UPC</div><div><b>Universidad Peruana de Ciencias Aplicadas</b></div></div><h1>TEST DE INTELIGENCIA EMOCIONAL PARA ADOLESCENTES ESCOLARES (TIEA)</h1><p class="sub">${t}</p>`}
+function form(){
+ app.innerHTML=head("Responde con honestidad. No hay respuestas correctas o incorrectas. Tus respuestas son anónimas y confidenciales para fines del análisis.")+
+ `<div class="card"><div class="g">
+ <label class="f">Nombre completo<input id="nom" autocomplete="name"></label>
+ <label class="f">Edad<input id="eda" type="number" min="8" max="25"></label>
+ <label class="f">Sexo<select id="sex"><option value="">Elegir</option><option>M</option><option>F</option></select></label>
+ <label class="f">Grado<input id="gra"></label>
+ <label class="f">Sección<input id="sec"></label>
+ <label class="f">Fecha<input id="fec" type="date" value="${hoy()}"></label></div></div>
+ <div class="card"><p class="leg">Marca la frecuencia con que te ocurre: 1 = Nunca, 2 = Casi nunca, 3 = A veces, 4 = Casi siempre, 5 = Siempre.</p>`+
+ Q.map((q,i)=>`<div class="q"><p><b>${i+1}.</b> ${q}</p><div class="sc">${L.map((l,k)=>`<label><input type="radio" name="q${i}" value="${k+1}"><span>${k+1}</span>${l}</label>`).join("")}</div></div>`).join("")+
+ `</div><div class="err" id="err"></div><button id="env">Enviar respuestas</button> ${admin?'<button class="s" id="ver">Ver resultados / Excel</button>':''}`;
+ document.getElementById("env").onclick=send;
+ if(admin)document.getElementById("ver").onclick=results;
+}
+async function send(){
+ const v=id=>document.getElementById(id).value.trim(),err=document.getElementById("err");
+ const r={nombre:v("nom"),edad:v("eda"),sexo:v("sex"),grado:v("gra"),seccion:v("sec"),fecha:v("fec")};
+ for(const k in r)if(!r[k]){err.textContent="Completa todos los datos generales.";return}
+ const a=[];for(let i=0;i<20;i++){const c=document.querySelector(`input[name=q${i}]:checked`);if(!c){err.textContent="Falta responder la afirmación "+(i+1)+".";return}a.push(+c.value)}
+ if(!db||!user){err.textContent="No se pudo conectar para guardar. Inicia sesión en Claude e inténtalo de nuevo.";return}
+ r.respuestas=a;r.total=a.reduce((x,y)=>x+y,0);r.enviado=new Date().toISOString();
+ try{document.getElementById("env").disabled=true;const uid=await user.id();await db.collection("responses").doc(uid).set(r);
+  app.innerHTML=head("")+`<div class="card ok"><h2>¡Gracias, ${r.nombre.replace(/</g,"")}!</h2><p>Tus respuestas fueron registradas correctamente.</p></div>`}
+ catch(e){document.getElementById("env").disabled=false;err.textContent="Error al guardar ("+(e.code||"desconocido")+"). Es posible que no tengas permiso para enviar respuestas."}
+}
+function results(){
+ app.innerHTML=head("Resultados recibidos")+`<div class="bar" id="cnt">Cargando…</div><p><button id="xl">Descargar Excel (.xlsx)</button> <button class="s" id="bk">Volver al formulario</button></p><div class="tw" id="tb"></div>`;
+ document.getElementById("bk").onclick=form;let rows=[];
+ const hdr=["Nombre","Edad","Sexo","Grado","Sección","Fecha",...Q.map((_,i)=>"P"+(i+1)),"Total","Enviado"];
+ const toRow=d=>[d.nombre,d.edad,d.sexo,d.grado,d.seccion,d.fecha,...d.respuestas,d.total,d.enviado];
+ db.collection("responses").onSnapshot(s=>{rows=s.docs.map(x=>x.data()).sort((a,b)=>(a.enviado>b.enviado?1:-1));
+  document.getElementById("cnt").textContent=rows.length+" respuestas";
+  const t=document.getElementById("tb");t.textContent="";const tbl=document.createElement("table");
+  [hdr,...rows.map(toRow)].forEach((r,i)=>{const tr=tbl.insertRow();r.forEach(c=>{const td=document.createElement(i?"td":"th");td.textContent=c;tr.appendChild(td)})});t.appendChild(tbl)},
+  e=>{document.getElementById("cnt").textContent="No tienes permiso para ver las respuestas."});
+ document.getElementById("xl").onclick=async()=>{
+  const ws=XLSX.utils.aoa_to_sheet([hdr,...rows.map(toRow)]),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"TIEA");
+  const buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+  try{const dl=await claude.use("downloads");await dl.save({filename:"TIEA_respuestas_UPC.xlsx",data:new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})})}catch(e){}};
+}
+form();
+(async()=>{try{db=await claude.use("db");user=await claude.use("user");admin=!!(user&&user.canEdit());if(admin)form()}catch(e){}})();
+</script></body></html>
